@@ -1,7 +1,7 @@
 import { IDoctorResponse } from "@/Models/Doctor"; // 💡 এপিআই এর টাইপটি নিয়ে আসলাম
 import { CalendarDays, CheckCircle, Star } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link"; // 💡 প্রোফাইলে নেভিগেট করার জন্য
+import Link from "next/link";
 
 function DoctorCard({ doctor }: { doctor: IDoctorResponse }) {
   console.log(doctor);
@@ -62,10 +62,12 @@ function DoctorCard({ doctor }: { doctor: IDoctorResponse }) {
         </div>
 
         <div className="mt-auto grid grid-cols-2 gap-2">
-          <button className="rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95">
+          <Link
+            href={`/bookdoctor/${doctor._id}`}
+            className="rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+          >
             Book Appointment
-          </button>
-          {/* 💡 View Profile বাটনে ক্লিক করলে নির্দিষ্ট ডক্টরের ডাইনামিক প্রোফাইলে চলে যাবে */}
+          </Link>
           <Link
             href={`/doctors/${doctor._id}`}
             className="rounded-lg border border-border py-2.5 text-xs font-semibold text-muted-foreground transition-all hover:border-primary hover:text-foreground flex items-center justify-center text-center bg-background/50 hover:bg-background"

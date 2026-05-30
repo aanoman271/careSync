@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const allDoctors = await Doctor.find({})
       .populate({
         path: "userId",
-        select: "name email image phone",
+        select: " name email image phone",
       })
       .sort({ createdAt: -1 });
 
