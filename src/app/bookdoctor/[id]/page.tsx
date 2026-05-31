@@ -9,43 +9,22 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageSquare,
-  X,
+  CheckCircle2,
+  Dot,
 } from "lucide-react";
-import { DaySlot } from "@/types/bookDoctor";
+import {
+  AvailableSlot,
+  DaySlot,
+  DoctorData,
+  PatientInfo,
+} from "@/types/bookDoctor";
 import { Stepper } from "@/app/Features/bookDoctor/component/Stteper";
 import { getDoctorDetails } from "@/app/Features/doctors/data/data";
-
-// ─── Interfaces ───────────────────────────────────────────────────────────────
-
-interface AvailableSlot {
-  day: string;
-  startTime?: string;
-  endTime?: string;
-}
-
-interface DoctorUser {
-  name: string;
-  image?: string;
-}
-
-interface DoctorData {
-  userId?: DoctorUser;
-  specialization?: string;
-  hospital?: string;
-  rating?: number | string;
-  availableSlots?: AvailableSlot[];
-}
-
-interface PatientInfo {
-  name: string;
-  age: string;
-  disease: string;
-}
-
-interface ReviewForm {
-  rating: number;
-  comment: string;
-}
+import { ReviewModal } from "@/app/shared/RateReview";
+import { useSession } from "next-auth/react";
+import useAxios from "@/app/hooks/useAxios";
+import Swal from "sweetalert2";
+import { compare } from "bcryptjs";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,149 +77,6 @@ const fieldClass =
 
 const labelClass = "block text-xs font-semibold text-muted-foreground mb-1.5";
 
-// ─── Star Rating Input ────────────────────────────────────────────────────────
-
-function StarRatingInput({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-}) {
-  const [hovered, setHovered] = useState(0);
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          onClick={() => onChange(star)}
-          onMouseEnter={() => setHovered(star)}
-          onMouseLeave={() => setHovered(0)}
-          className="transition-transform hover:scale-110"
-        >
-          <Star
-            size={24}
-            className={`transition-colors ${
-              star <= (hovered || value)
-                ? "fill-yellow-400 text-yellow-400"
-                : "text-border"
-            }`}
-          />
-        </button>
-      ))}
-      {value > 0 && (
-        <span className="ml-2 self-center text-xs text-muted-foreground">
-          {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][value]}
-        </span>
-      )}
-    </div>
-  );
-}
-
-// ─── Review Modal ─────────────────────────────────────────────────────────────
-
-function ReviewModal({
-  doctorName,
-  onClose,
-}: {
-  doctorName: string;
-  onClose: () => void;
-}) {
-  const [form, setForm] = useState<ReviewForm>({ rating: 0, comment: "" });
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = () => {
-    if (!form.rating || !form.comment.trim()) return;
-    console.log("Review Submitted:", {
-      doctor: doctorName,
-      rating: form.rating,
-      comment: form.comment,
-      submittedAt: new Date().toISOString(),
-    });
-    setSubmitted(true);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl border border-border/40 bg-card p-6 shadow-2xl">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold text-foreground">
-              Rate & Review
-            </h3>
-            <p className="text-xs text-muted-foreground">{doctorName}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {submitted ? (
-          <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/15">
-              <Star size={28} className="fill-green-500 text-green-500" />
-            </div>
-            <p className="font-semibold text-foreground">
-              Thank you for your review!
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Your feedback helps other patients make better decisions.
-            </p>
-            <button
-              onClick={onClose}
-              className="mt-2 rounded-lg bg-primary px-6 py-2.5 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90"
-            >
-              Done
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-5">
-            {/* Star Rating */}
-            <div>
-              <label className={labelClass}>Your Rating</label>
-              <StarRatingInput
-                value={form.rating}
-                onChange={(v) => setForm((f) => ({ ...f, rating: v }))}
-              />
-            </div>
-
-            {/* Comment */}
-            <div>
-              <label className={labelClass}>Your Review</label>
-              <textarea
-                rows={4}
-                placeholder="Share your experience with this doctor..."
-                value={form.comment}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, comment: e.target.value }))
-                }
-                maxLength={300}
-                className={fieldClass + " resize-none"}
-              />
-              <p className="mt-1 text-right text-[11px] text-muted-foreground">
-                {form.comment.length}/300
-              </p>
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!form.rating || !form.comment.trim()}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Submit Review
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─── Patient Info Form ────────────────────────────────────────────────────────
 
 function PatientInfoForm({
@@ -256,7 +92,6 @@ function PatientInfoForm({
         Patient Information
       </h4>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* Name */}
         <div className="sm:col-span-2">
           <label className={labelClass}>Full Name</label>
           <input
@@ -267,8 +102,6 @@ function PatientInfoForm({
             className={fieldClass}
           />
         </div>
-
-        {/* Age */}
         <div>
           <label className={labelClass}>Age</label>
           <input
@@ -281,8 +114,6 @@ function PatientInfoForm({
             className={fieldClass}
           />
         </div>
-
-        {/* Disease / Reason */}
         <div>
           <label className={labelClass}>Chief Complaint / Disease</label>
           <input
@@ -295,6 +126,78 @@ function PatientInfoForm({
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Day Card ─────────────────────────────────────────────────────────────────
+
+function DayCard({
+  d,
+  isActive,
+  isDoctorAvailable,
+  onClick,
+}: {
+  d: DaySlot;
+  isActive: boolean;
+  isDoctorAvailable: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={!isDoctorAvailable}
+      onClick={onClick}
+      className={`group relative flex flex-col items-center rounded-xl border py-3 transition-all duration-200 ${
+        isActive
+          ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
+          : !isDoctorAvailable
+            ? "cursor-not-allowed border-dashed border-border/40 bg-muted/10 opacity-40"
+            : "border-border bg-background text-foreground hover:border-primary/60 hover:bg-primary/5 hover:shadow-sm"
+      }`}
+    >
+      {/* Active check */}
+      {isActive && (
+        <span className="absolute right-1.5 top-1.5">
+          <CheckCircle2 size={12} className="text-primary-foreground/80" />
+        </span>
+      )}
+
+      {/* Day name */}
+      <span
+        className={`text-[10px] font-bold uppercase tracking-widest ${
+          isActive
+            ? "text-primary-foreground/70"
+            : isDoctorAvailable
+              ? "text-muted-foreground"
+              : "text-muted-foreground/40"
+        }`}
+      >
+        {d.day}
+      </span>
+
+      {/* Day number */}
+      <span
+        className={`my-1 text-xl font-bold leading-none ${
+          isActive ? "text-primary-foreground" : "text-foreground"
+        }`}
+      >
+        {d.dayNum}
+      </span>
+
+      {/* Status pill */}
+      <span
+        className={` font-semibold  tracking-wider ${
+          isActive
+            ? " text-primary-foreground"
+            : isDoctorAvailable
+              ? " text-green-600 dark:text-green-400"
+              : " text-red-700"
+        }`}
+      >
+        {/* {isDoctorAvailable ? "Open" : "Off"} */}
+        <Dot size={30}></Dot>
+      </span>
+    </button>
   );
 }
 
@@ -312,6 +215,7 @@ export default function BookingSchedulePage({
   const [dayOffset, setDayOffset] = useState<number>(0);
   const [doctor, setDoctor] = useState<DoctorData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   const [patientInfo, setPatientInfo] = useState<PatientInfo>({
@@ -370,20 +274,62 @@ export default function BookingSchedulePage({
     setSelectedTime(null);
   };
 
+  const axios = useAxios();
+  const { data: session } = useSession();
+  const user = session?.user;
   // ── Continue Handler ──
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const payload = {
+      patientId: user?.id,
       doctorId: id,
-      doctorName: doctor?.userId?.name,
       date: selectedDay.date,
       time: selectedTime,
+      status: "pending",
+      patientCapacity: 3,
       patient: {
         name: patientInfo.name,
         age: patientInfo.age,
         disease: patientInfo.disease,
       },
     };
-    console.log("Booking Payload:", payload);
+
+    try {
+      setSubmitting(true);
+      const response = await axios.post("/api/appointment", payload);
+
+      if (response.data.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "Appointment Booked!",
+          text: response.data.message,
+          confirmButtonColor: "hsl(var(--primary))",
+          background: "hsl(var(--card))",
+          color: "hsl(var(--foreground))",
+          confirmButtonText: "Great, thanks!",
+          timer: 4000,
+          timerProgressBar: true,
+        });
+      }
+    } catch (error: unknown) {
+      const axiosError = error as {
+        response?: { data?: { message?: string } };
+      };
+      const message =
+        axiosError?.response?.data?.message ??
+        "Something went wrong. Please try again.";
+
+      await Swal.fire({
+        icon: "error",
+        title: "Booking Failed",
+        text: message,
+        confirmButtonColor: "hsl(var(--destructive))",
+        background: "hsl(var(--card))",
+        color: "hsl(var(--foreground))",
+        confirmButtonText: "Try Again",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const isFormValid =
@@ -392,6 +338,7 @@ export default function BookingSchedulePage({
     patientInfo.age.trim() &&
     patientInfo.disease.trim();
 
+  // ── Loading ──
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -471,7 +418,6 @@ export default function BookingSchedulePage({
                 </div>
               </div>
 
-              {/* Rate & Review Button */}
               <button
                 onClick={() => setShowReviewModal(true)}
                 className="flex shrink-0 items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-xs font-semibold text-muted-foreground transition-all hover:border-primary hover:text-primary"
@@ -482,19 +428,33 @@ export default function BookingSchedulePage({
             </div>
 
             {/* Day Picker */}
-            <div className="rounded-xl border border-border/40 bg-card p-6">
-              <div className="mb-5 flex items-center justify-between">
-                <h4 className="text-base font-semibold text-foreground">
-                  Select Day
-                </h4>
-                <div className="flex gap-2">
+            <div className="rounded-xl border border-border/40 bg-card p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    Select Day
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground">
+                    {
+                      DAYS.filter((_, i) =>
+                        doctor.availableSlots?.some(
+                          (s: AvailableSlot) =>
+                            s.day.toLowerCase().slice(0, 3) ===
+                            DAYS[i]?.day.toLowerCase(),
+                        ),
+                      ).length
+                    }{" "}
+                    available days
+                  </p>
+                </div>
+                <div className="flex gap-1.5">
                   <button
                     type="button"
                     onClick={() => setDayOffset((v) => Math.max(0, v - 1))}
                     disabled={!canPrev}
                     className="rounded-lg border border-border p-1.5 text-muted-foreground transition-all hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
                   >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft size={14} />
                   </button>
                   <button
                     type="button"
@@ -504,12 +464,12 @@ export default function BookingSchedulePage({
                     disabled={!canNext}
                     className="rounded-lg border border-border p-1.5 text-muted-foreground transition-all hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
                   >
-                    <ChevronRight size={16} />
+                    <ChevronRight size={14} />
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-5 gap-2">
                 {visibleDays.map((d) => {
                   const globalIndex = DAYS.indexOf(d);
                   const isActive = globalIndex === selectedDayIndex;
@@ -520,35 +480,31 @@ export default function BookingSchedulePage({
                   );
 
                   return (
-                    <button
+                    <DayCard
                       key={d.date}
-                      type="button"
-                      disabled={!isDoctorAvailable}
+                      d={d}
+                      isActive={isActive}
+                      isDoctorAvailable={!!isDoctorAvailable}
                       onClick={() => handleDaySelect(globalIndex)}
-                      className={`flex flex-col items-center rounded-xl border py-4 transition-all ${
-                        isActive
-                          ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                          : !isDoctorAvailable
-                            ? "cursor-not-allowed border-dashed border-border/50 bg-muted/20 text-muted-foreground/30 opacity-50"
-                            : "border-border bg-background text-foreground hover:border-primary/50 hover:bg-primary/5"
-                      }`}
-                    >
-                      <span
-                        className={`text-[11px] font-semibold uppercase tracking-wider ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}
-                      >
-                        {d.day}
-                      </span>
-                      <span className="mt-1 text-2xl font-bold">
-                        {d.dayNum}
-                      </span>
-                      <span
-                        className={`mt-1 text-[10px] ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}
-                      >
-                        {isDoctorAvailable ? "Available" : "Off Day"}
-                      </span>
-                    </button>
+                    />
                   );
                 })}
+              </div>
+
+              {/* Legend */}
+              <div className="mt-3 flex items-center gap-4">
+                <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />{" "}
+                  Available
+                </span>
+                <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full border border-border/50 bg-red-700" />{" "}
+                  Off day
+                </span>
+                <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />{" "}
+                  Selected
+                </span>
               </div>
             </div>
 
@@ -630,61 +586,67 @@ export default function BookingSchedulePage({
                     </div>
                   ))}
 
-                  {/* Patient info preview */}
                   {(patientInfo.name ||
                     patientInfo.age ||
                     patientInfo.disease) && (
-                    <>
-                      <div className="border-t border-border pt-3">
-                        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                          Patient
-                        </p>
-                        {patientInfo.name && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
-                              Name
-                            </span>
-                            <span className="text-xs font-semibold text-foreground">
-                              {patientInfo.name}
-                            </span>
-                          </div>
-                        )}
-                        {patientInfo.age && (
-                          <div className="mt-1.5 flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
-                              Age
-                            </span>
-                            <span className="text-xs font-semibold text-foreground">
-                              {patientInfo.age} yrs
-                            </span>
-                          </div>
-                        )}
-                        {patientInfo.disease && (
-                          <div className="mt-1.5 flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
-                              Complaint
-                            </span>
-                            <span className=" truncate text-right text-xs font-semibold text-foreground">
-                              {patientInfo.disease}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </>
+                    <div className="border-t border-border pt-3">
+                      <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Patient
+                      </p>
+                      {patientInfo.name && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Name
+                          </span>
+                          <span className="text-xs font-semibold text-foreground">
+                            {patientInfo.name}
+                          </span>
+                        </div>
+                      )}
+                      {patientInfo.age && (
+                        <div className="mt-1.5 flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Age
+                          </span>
+                          <span className="text-xs font-semibold text-foreground">
+                            {patientInfo.age} yrs
+                          </span>
+                        </div>
+                      )}
+                      {patientInfo.disease && (
+                        <div className="mt-1.5 flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Complaint
+                          </span>
+                          <span className=" truncate text-right text-xs font-semibold text-foreground">
+                            {patientInfo.disease}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
                 <button
                   type="button"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || submitting}
                   onClick={handleContinue}
                   className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Continue to Confirm
-                  <ArrowRight size={18} />
+                  {submitting ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                      Booking...
+                    </>
+                  ) : (
+                    <>
+                      Continue to Confirm
+                      <ArrowRight size={18} />
+                    </>
+                  )}
                 </button>
 
-                {!isFormValid && (
+                {!isFormValid && !submitting && (
                   <p className="mt-3 text-center text-[11px] text-muted-foreground">
                     {!selectedTime
                       ? "Select a time slot to continue."
