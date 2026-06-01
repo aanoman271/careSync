@@ -20,7 +20,7 @@ import { signOut, useSession } from "next-auth/react";
 import useSweetAlert from "@/app/hooks/useSweetAlert";
 import { Logo } from "@/app/shared/Logo";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const roleBasedLinks: Record<
   string,
@@ -31,13 +31,16 @@ const roleBasedLinks: Record<
   }>
 > = {
   patient: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     {
       icon: CalendarDays,
       label: "Upcoming Appointments",
-      href: "/dashboard/appointments",
+      href: "/dashboard/patient/upcomming",
     },
-    { icon: History, label: "Appointment History", href: "/dashboard/history" },
+    {
+      icon: History,
+      label: "Appointment History",
+      href: "/dashboard/patient/history",
+    },
     {
       icon: FileSpreadsheet,
       label: "Prescription Management",
@@ -112,6 +115,7 @@ const roleBasedLinks: Record<
 
 const SideBar = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const { confirmAlert, successAlert } = useSweetAlert();
 
@@ -152,9 +156,7 @@ const SideBar = () => {
         ) : (
           sidebarLinks.map((link) => {
             const IconComponent = link.icon;
-            const isActive =
-              typeof window !== "undefined" &&
-              window.location.pathname === link.href;
+            const isActive = pathname === link.href;
 
             return (
               <Link
@@ -162,7 +164,7 @@ const SideBar = () => {
                 href={link.href}
                 className={`flex items-center gap-4 rounded-lg px-4 py-2.5 text-xs font-semibold tracking-wide transition-all duration-200 ${
                   isActive
-                    ? "bg-primary/15 text-primary"
+                    ? "bg-primary/5 text-primary"
                     : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                 }`}
               >

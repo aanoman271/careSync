@@ -1,4 +1,17 @@
 import QueueItem, { QueueStatus } from "@/app/types/Type";
+import { Appointment } from "@/types/apointment";
+
+export async function getAppointmentDetails(id: string): Promise<Appointment> {
+  const res = await fetch(`http://localhost:3000/api/appointment/${id}`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch appointment details");
+  }
+
+  return res.json();
+}
 
 export const stats = [
   { label: "Avg. Wait", value: "14m", color: "text-secondary" },

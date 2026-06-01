@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect } from "react"; // 💡 ফিক্সড: useEffect ইম্পোর্ট করা হলো
+import { useState, useEffect } from "react";
 import { getAllDoctors } from "../Features/doctors/data/data";
 import { LayoutGrid, List, Search } from "lucide-react";
 import DoctorCard from "../Features/doctors/conponent/DoctorCard";
 import CTACard from "../Features/doctors/conponent/CTACard";
-import { IDoctorResponse } from "@/Models/Doctor"; // 💡 ফিক্সড: টাইপ ইন্টারফেস ইম্পোর্ট করা হলো
+import { IDoctorResponse } from "@/Models/Doctor"; //
 
 export default function DoctorsPage() {
   const [search, setSearch] = useState("");

@@ -9,7 +9,7 @@ interface IPatient {
 
 export interface IAppointment extends Document {
   doctorId: mongoose.Types.ObjectId;
-  patientId: mongoose.Types.ObjectId; // ◄ এখানে patientId টাইপ যুক্ত করা হলো
+  patientId: mongoose.Types.ObjectId;
   date: string;
   time: string;
   status: "Pending" | "Approved" | "Completed" | "Rejected" | "Cancelled";
