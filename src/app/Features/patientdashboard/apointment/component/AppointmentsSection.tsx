@@ -1,7 +1,7 @@
 import { Calendar, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import AppointmentCard from "./AppointmentCard";
-import { APPOINTMENTS } from "../data/data";
+import { APPOINTMENTS } from "../../data/data";
 import { sectionTitleClass } from "@/utils/cardVariants";
 
 export default function AppointmentsSection() {

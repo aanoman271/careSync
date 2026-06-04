@@ -83,3 +83,8 @@ AppointmentSchema.pre(
 export const Appointment =
   mongoose.models.Appointment ||
   mongoose.model<IAppointment>("Appointment", AppointmentSchema);
+export interface AppointmentResponse {
+  success: boolean;
+  count: number;
+  data: IPatient[]; // অথবা তোমার আসল Appointment[] টাইপ দিতে পারো
+}

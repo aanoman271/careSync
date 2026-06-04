@@ -1,5 +1,5 @@
 import { Pill } from "lucide-react";
-import { PRESCRIPTIONS } from "../data/data";
+import { PRESCRIPTIONS } from "../../data/data";
 import PrescriptionCard from "./PrescriptionCard";
 import { sectionTitleClass } from "@/utils/cardVariants";
 

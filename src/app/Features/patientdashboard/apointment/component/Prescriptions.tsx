@@ -1,6 +1,6 @@
 import { sectionTitleClass } from "@/utils/cardVariants";
 import { Pill } from "lucide-react";
-import { PRESCRIPTIONS } from "../data/data";
+import { PRESCRIPTIONS } from "../../data/data";
 import PrescriptionCard from "./PrescriptionCard";
 
 function PrescriptionsSection() {

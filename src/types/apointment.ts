@@ -14,6 +14,45 @@ export interface Appointment {
   statusColor: "primary" | "tertiary";
   actionType: "join" | "directions";
 }
+// 💡 পপুলেটেড ডাটার জন্য টাইপ-সেফ ইন্টারফেস স্ট্রাকচার
+interface PopulatedUser {
+  _id: string;
+  name: string;
+  email: string;
+  image?: string;
+  phone?: string;
+}
+
+interface PopulatedDoctor {
+  _id: string;
+  specialization: string;
+  userId: PopulatedUser;
+}
+
+interface PopulatedPatient {
+  _id: string;
+  name: string;
+}
+
+export interface PopulatedAppointment {
+  _id: string;
+  id?: string;
+  date: string;
+  time: string;
+  status: "Pending" | "Approved" | "Completed" | "Rejected" | "Cancelled";
+  doctorId: PopulatedDoctor;
+  patientId: string | PopulatedPatient;
+  patient?: string | PopulatedPatient; // ব্যাকএন্ড থেকে ডাইনামিক স্ট্রিং বা অবজেক্ট আসতে পারে তার ব্যাকআপ
+  specialty?: string;
+  specialtyColor?: string;
+  actionType?: string;
+}
+
+export interface AppointmentResponse {
+  success: boolean;
+  count: number;
+  data: Appointment[];
+}
 export interface UpcomingAppointmentProps {
   appointmentList: Appointment[];
 }

@@ -1,5 +1,13 @@
 import { UserRole } from "@/Models/User";
 
+export interface Doctor {
+  name: string;
+  specialty: string;
+  experience: string;
+  rating: number;
+  image: string;
+}
+
 export interface IUser {
   fullName: string;
   email: string;

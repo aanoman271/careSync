@@ -1,7 +1,7 @@
 import QueueItem, { QueueStatus } from "@/app/types/Type";
-import { Appointment } from "@/types/apointment";
+import { Appointment, AppointmentResponse } from "@/types/apointment";
 
-export async function getAppointmentDetails(id: string): Promise<Appointment> {
+export async function getAppointmentDetails(id: string): Promise<AppointmentResponse> {
   const res = await fetch(`http://localhost:3000/api/appointment/${id}`, {
     cache: "no-store",
   });

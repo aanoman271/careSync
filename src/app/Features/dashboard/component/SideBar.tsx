@@ -34,12 +34,12 @@ const roleBasedLinks: Record<
     {
       icon: CalendarDays,
       label: "Upcoming Appointments",
-      href: "/dashboard/patient/upcomming",
+      href: "/dashboard/patient",
     },
     {
       icon: History,
       label: "Appointment History",
-      href: "/dashboard/patient/history",
+      href: `/dashboard/patient/history`,
     },
     {
       icon: FileSpreadsheet,
@@ -156,7 +156,13 @@ const SideBar = () => {
         ) : (
           sidebarLinks.map((link) => {
             const IconComponent = link.icon;
-            const isActive = pathname === link.href;
+
+            // Check active state against the dynamic href
+            const isActive =
+              pathname === link.href ||
+              (pathname.startsWith(link.href) &&
+                link.href !== "/dashboard" &&
+                link.href !== "/dashboard/patient");
 
             return (
               <Link

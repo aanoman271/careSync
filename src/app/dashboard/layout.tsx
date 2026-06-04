@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 // hidden via the pathname check added in those components.
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="w-full flex min-h-screen bg-background text-foreground">
       {/* Desktop sidebar */}
       <SideBar />
       <div className="flex min-w-0 flex-1 flex-col">
